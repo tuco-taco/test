@@ -11,7 +11,13 @@ export interface MenuItem {
 
 export type DietaryTag = 'V' | 'VG' | 'GF' | 'S';
 
-export type ImageTheme = 'modern' | 'pub' | 'cafe' | 'bistro' | 'nautical' | 'farm' | 'foodie' | 'influencer' | 'scrivani';
+export interface ThemeDef {
+  id: string;
+  label: string;
+  icon: string;
+  prompt: string;
+  isCustom?: boolean;
+}
 
 export interface MenuConfig {
   title: string;
@@ -21,10 +27,20 @@ export interface MenuConfig {
   secondaryColor: string;
   backgroundColor: string;
   fontFamily: 'sans' | 'serif';
-  imageTheme: ImageTheme;
+  imageTheme: string;
   items: MenuItem[];
   featuredImage: string;
   featuredItemName: string;
+}
+
+export type MenuCategory = 'Breakfast' | 'Brunch' | 'Lunch' | 'Happy Hour' | 'Dinner' | 'Senior Citizen' | 'Specials';
+
+export interface SavedMenu {
+  id: string;
+  name: string;
+  timestamp: number;
+  config: MenuConfig;
+  categories: MenuCategory[];
 }
 
 export interface DietaryInfo {

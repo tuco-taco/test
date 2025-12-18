@@ -1,25 +1,13 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { MenuItem, ImageTheme } from "../types";
+import { MenuItem } from "../types";
 
-const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+// Fix: Strictly use process.env.API_KEY for initialization as per guidelines
+const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-const THEME_PROMPTS: Record<ImageTheme, string> = {
-  modern: "professional food photography, studio lighting, clean minimalist background, sharp focus, 8k resolution.",
-  scrivani: "editorial food photography in the style of Andrew Scrivani. Moody, high-contrast lighting with deep shadows (chiaroscuro effect). Rustic, dark matte backgrounds. Natural textures like wood or stone. Authentic, slightly messy-yet-perfect food styling. Rich, saturated earthy tones and high editorial quality.",
-  pub: "warm dim lighting, dark oak wood table background, cozy tavern atmosphere, rustic plating, amber glow.",
-  cafe: "bright and airy, natural daylight, white marble tabletop, blurry cafe background with coffee cups, fresh morning vibe.",
-  bistro: "classic french bistro style, checkered tablecloth, elegant porcelain plating, sophisticated lighting, gourmet presentation.",
-  nautical: "coastal kitchen vibe, weathered blue-washed wood, sea salt textures, rope accents, bright seaside light.",
-  farm: "rustic farm-to-table aesthetic, burlap textures, raw ingredients like herbs and vegetables scattered nearby, natural sun-drenched lighting.",
-  foodie: "extreme close-up macro photography, high contrast, focus on steam and glistening textures, artistic minimalist plating.",
-  influencer: "vibrant saturated colors, trendy lifestyle props, shallow depth of field with beautiful bokeh, overhead or 45-degree 'instagrammable' angle."
-};
-
-export const generateFoodImage = async (itemName: string, itemDescription: string, theme: ImageTheme = 'modern'): Promise<string | null> => {
+export const generateFoodImage = async (itemName: string, itemDescription: string, themePrompt: string): Promise<string | null> => {
   try {
     const ai = getAI();
-    const styleDescription = THEME_PROMPTS[theme] || THEME_PROMPTS.modern;
     
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
@@ -27,7 +15,7 @@ export const generateFoodImage = async (itemName: string, itemDescription: strin
         parts: [{ 
           text: `A high-quality, appetizing professional food photography shot of ${itemName}. 
           The composition should clearly feature and visualize the following ingredients or components: ${itemDescription}.
-          Style: ${styleDescription}
+          Style: ${themePrompt}
           Format: 16:9 vertical orientation. 
           CRITICAL: ABSOLUTELY NO TEXT, no labels, no prices, no logos, and no watermarks in the image. Pure photography only.` 
         }],

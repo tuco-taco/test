@@ -17,6 +17,21 @@ const MenuBoard: React.FC<MenuBoardProps> = ({ config }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentUrl, setCurrentUrl] = useState(window.location.href);
+
+  // Sync URL state when hash changes
+  useEffect(() => {
+    const handleHashChange = () => {
+      setCurrentUrl(window.location.href);
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    // Also update periodically to catch local state changes that might affect the board
+    const interval = setInterval(() => setCurrentUrl(window.location.href), 2000);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      clearInterval(interval);
+    };
+  }, []);
 
   const itemsWithImages = useMemo(() => {
     return config.items.filter(item => item.imageUrl && item.imageUrl.trim() !== '' && !item.isSoldOut);
@@ -84,15 +99,27 @@ const MenuBoard: React.FC<MenuBoardProps> = ({ config }) => {
 
   const fontClass = config.fontFamily === 'serif' ? 'font-serif' : 'font-sans';
   
-  // Create a QR Code pointing to the current share URL
-  const qrUrl = `https://chart.googleapis.com/chart?cht=qr&chs=150x150&chl=${encodeURIComponent(window.location.href)}`;
+  // Use a more robust QR API. 
+  // We limit the length to ensure it stays scannable. 
+  // If the menu is too large, it falls back to the homepage.
+  const qrUrl = useMemo(() => {
+    const MAX_QR_CHARS = 2500; // Safe limit for many scanners
+    const targetUrl = currentUrl.length > MAX_QR_CHARS 
+      ? window.location.origin + window.location.pathname 
+      : currentUrl;
+    
+    // Using goqr.me for better reliability
+    return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(targetUrl)}&bgcolor=ffffff&color=000000&margin=5`;
+  }, [currentUrl]);
+
+  const isTooLong = currentUrl.length > 2500;
 
   return (
     <div 
       className={`relative w-full h-full overflow-hidden flex select-none board-container ${fontClass}`}
       style={{ backgroundColor: config.backgroundColor, containerType: 'size' }}
     >
-      {/* Left Panel: Alternating Featured Images */}
+      {/* Left Panel: Featured Images */}
       <div className="w-[40%] h-full relative overflow-hidden bg-gray-900">
         <div key={displayImage} className="absolute inset-0 animate-fade-in transition-opacity duration-1000">
           <img 
@@ -146,7 +173,6 @@ const MenuBoard: React.FC<MenuBoardProps> = ({ config }) => {
               <div className="flex items-center gap-[0.6cqw] mt-[0.6cqw] bg-white/50 px-[0.8cqw] py-[0.3cqw] rounded-full border border-gray-100 shadow-sm backdrop-blur-sm">
                 <i className={`fas ${weather.icon} text-[1cqw]`} style={{ color: config.accentColor }}></i>
                 <span className="text-[1cqw] font-black text-gray-800">{weather.temp}°F</span>
-                <span className="text-[0.65cqw] font-bold text-gray-400 uppercase tracking-widest ml-[0.2cqw]">LOCAL</span>
               </div>
             )}
           </div>
@@ -155,7 +181,7 @@ const MenuBoard: React.FC<MenuBoardProps> = ({ config }) => {
         {/* Menu Items List */}
         <div className="flex-grow flex flex-col gap-[1cqw] overflow-hidden">
           {config.items.slice(0, 6).map((item) => (
-            <div key={item.id} className={`flex justify-between items-start group border-b border-gray-100 pb-[1cqw] last:border-0 relative ${item.isSoldOut ? 'grayscale-[0.8] opacity-50' : ''}`}>
+            <div key={item.id} className={`flex justify-between items-start border-b border-gray-100 pb-[1cqw] last:border-0 relative ${item.isSoldOut ? 'grayscale-[0.8] opacity-50' : ''}`}>
               <div className="flex-grow pr-[3cqw] overflow-hidden">
                 <div className="flex items-center gap-[0.6cqw]">
                   <h3 className={`text-[1.6cqw] font-[900] text-gray-900 uppercase tracking-tight leading-none truncate ${item.isSoldOut ? 'line-through decoration-rose-500 decoration-[0.2cqw]' : ''}`}>
@@ -165,21 +191,14 @@ const MenuBoard: React.FC<MenuBoardProps> = ({ config }) => {
                     {item.dietary?.map(tag => {
                       const info = DIETARY_DATA.find(d => d.tag === tag);
                       return info ? (
-                        <span 
-                          key={tag} 
-                          title={info.label}
-                          className={`${info.color} text-white text-[0.55cqw] w-[0.9cqw] h-[0.9cqw] rounded-full flex items-center justify-center font-black shadow-sm`}
-                        >
+                        <span key={tag} className={`${info.color} text-white text-[0.55cqw] w-[0.9cqw] h-[0.9cqw] rounded-full flex items-center justify-center font-black shadow-sm`}>
                           {tag}
                         </span>
                       ) : null;
                     })}
                   </div>
-                  {item.isSoldOut && (
-                    <span className="ml-[0.6cqw] text-[0.8cqw] font-black text-rose-600 border border-rose-600 px-[0.4cqw] rounded-sm uppercase tracking-widest">Sold Out</span>
-                  )}
                 </div>
-                <p className="text-[0.8cqw] text-gray-500 font-medium leading-[1.2] mt-[0.3cqw] line-clamp-2">
+                <p className="text-[0.8cqw] text-gray-500 font-medium mt-[0.3cqw] line-clamp-2">
                   {item.description}
                 </p>
               </div>
@@ -190,8 +209,8 @@ const MenuBoard: React.FC<MenuBoardProps> = ({ config }) => {
           ))}
         </div>
 
-        {/* Footer: Dietary Legend & QR Code */}
-        <div className="mt-auto border-t-[0.1cqw] border-gray-100 pt-[1.2cqw] flex items-center justify-between">
+        {/* Footer */}
+        <div className="mt-auto border-t border-gray-100 pt-[1.2cqw] flex items-center justify-between">
           <div className="flex gap-[1.2cqw]">
             {DIETARY_DATA.map((info) => (
               <div key={info.tag} className="flex items-center gap-[0.5cqw]">
@@ -206,10 +225,10 @@ const MenuBoard: React.FC<MenuBoardProps> = ({ config }) => {
           </div>
           <div className="flex items-center gap-[1.5cqw]">
             <div className="text-right">
-                <div className="text-[0.55cqw] font-black text-gray-400 uppercase tracking-widest">Scan for mobile menu</div>
-                <div className="text-[0.7cqw] font-bold text-gray-300 uppercase tracking-widest">{config.title} • FRESH DAILY</div>
+                <div className="text-[0.55cqw] font-black text-gray-400 uppercase tracking-widest leading-tight">Scan for Mobile Menu</div>
+                <div className="text-[0.7cqw] font-black text-gray-400 uppercase tracking-widest">{config.title}</div>
             </div>
-            <div className="w-[3.5cqw] h-[3.5cqw] bg-white p-[0.3cqw] rounded-sm shadow-sm flex items-center justify-center border border-gray-100">
+            <div className={`w-[6cqw] h-[6cqw] bg-white p-[0.6cqw] rounded-md shadow-xl flex items-center justify-center border-[0.2cqw] ${isTooLong ? 'border-amber-300' : 'border-white'}`}>
                 <img src={qrUrl} alt="Menu QR" className="w-full h-full object-contain" />
             </div>
           </div>
@@ -217,19 +236,9 @@ const MenuBoard: React.FC<MenuBoardProps> = ({ config }) => {
       </div>
       
       <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: scale(1.05); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        .animate-fade-in {
-          animation: fadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .line-clamp-2 {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;  
-          overflow: hidden;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(1.05); } to { opacity: 1; transform: scale(1); } }
+        .animate-fade-in { animation: fadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1); }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
       `}</style>
     </div>
   );

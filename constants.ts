@@ -1,5 +1,5 @@
 
-import { DietaryInfo, MenuConfig, ImageTheme } from './types';
+import { DietaryInfo, MenuConfig, ThemeDef } from './types';
 
 export const DIETARY_DATA: DietaryInfo[] = [
   { tag: 'V', label: 'VEGETARIAN', color: 'bg-[#8dc63f]' },
@@ -8,16 +8,16 @@ export const DIETARY_DATA: DietaryInfo[] = [
   { tag: 'S', label: 'SEAFOOD WATCH', color: 'bg-[#00aeef]' },
 ];
 
-export const IMAGE_THEMES: { value: ImageTheme; label: string; icon: string; description: string }[] = [
-  { value: 'modern', label: 'Modern Studio', icon: 'fa-camera-retro', description: 'Clean, professional studio lighting with minimalist backgrounds.' },
-  { value: 'scrivani', label: 'Editorial (Scrivani)', icon: 'fa-pen-nib', description: 'Moody, high-contrast, rustic editorial style inspired by Andrew Scrivani.' },
-  { value: 'pub', label: 'Traditional Pub', icon: 'fa-beer-mug-empty', description: 'Dark wood textures, warm amber lighting, and cozy tavern vibes.' },
-  { value: 'cafe', label: 'Bright Cafe', icon: 'fa-mug-saucer', description: 'Airy, natural light, marble tables, and a relaxed morning feel.' },
-  { value: 'bistro', label: 'Classic Bistro', icon: 'fa-utensils', description: 'Elegant plating, checkered linens, and sophisticated atmosphere.' },
-  { value: 'nautical', label: 'Nautical / Coastal', icon: 'fa-anchor', description: 'Weathered wood, blue accents, and seaside freshness.' },
-  { value: 'farm', label: 'Farm Fresh', icon: 'fa-wheat-awn', description: 'Rustic burlap, raw ingredients, and "straight from the field" honesty.' },
-  { value: 'foodie', label: 'Hardcore Foodie', icon: 'fa-bowl-food', description: 'Extreme close-ups, high contrast, and focus on rich textures.' },
-  { value: 'influencer', label: 'Influencer Style', icon: 'fa-mobile-screen-button', description: 'Vibrant colors, trendy props, and perfect social media bokeh.' },
+export const DEFAULT_THEMES: ThemeDef[] = [
+  { id: 'modern', label: 'Modern Studio', icon: 'fa-camera-retro', prompt: 'professional food photography, studio lighting, clean minimalist background, sharp focus, 8k resolution.' },
+  { id: 'scrivani', label: 'Editorial (Scrivani)', icon: 'fa-pen-nib', prompt: 'editorial food photography in the style of Andrew Scrivani. Moody, high-contrast lighting with deep shadows (chiaroscuro effect). Rustic, dark matte backgrounds. Natural textures like wood or stone. Authentic, slightly messy-yet-perfect food styling. Rich, saturated earthy tones and high editorial quality.' },
+  { id: 'pub', label: 'Traditional Pub', icon: 'fa-beer-mug-empty', prompt: 'warm dim lighting, dark oak wood table background, cozy tavern atmosphere, rustic plating, amber glow.' },
+  { id: 'cafe', label: 'Bright Cafe', icon: 'fa-mug-saucer', prompt: 'bright and airy, natural daylight, white marble tabletop, blurry cafe background with coffee cups, fresh morning vibe.' },
+  { id: 'bistro', label: 'Classic Bistro', icon: 'fa-utensils', prompt: 'classic french bistro style, checkered tablecloth, elegant porcelain plating, sophisticated lighting, gourmet presentation.' },
+  { id: 'nautical', label: 'Nautical / Coastal', icon: 'fa-anchor', prompt: 'coastal kitchen vibe, weathered blue-washed wood, sea salt textures, rope accents, bright seaside light.' },
+  { id: 'farm', label: 'Farm Fresh', icon: 'fa-wheat-awn', prompt: 'rustic farm-to-table aesthetic, burlap textures, raw ingredients like herbs and vegetables scattered nearby, natural sun-drenched lighting.' },
+  { id: 'foodie', label: 'Hardcore Foodie', icon: 'fa-bowl-food', prompt: 'extreme close-up macro photography, high contrast, focus on steam and glistening textures, artistic minimalist plating.' },
+  { id: 'influencer', label: 'Influencer Style', icon: 'fa-mobile-screen-button', prompt: 'vibrant saturated colors, trendy lifestyle props, shallow depth of field with beautiful bokeh, overhead or 45-degree \'instagrammable\' angle.' },
 ];
 
 export const DEFAULT_MENU: MenuConfig = {
